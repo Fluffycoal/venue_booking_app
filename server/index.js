@@ -22,6 +22,7 @@ const authRoutes = require('./routes/auth');
 const venueRoutes = require('./routes/venue');
 const bookingRoutes = require('./routes/booking');
 const reviewRoutes = require('./routes/review');
+const adminRoutes = require('./routes/admin');
 
 
 // Use routes
@@ -29,6 +30,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/venues', venueRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Connect to database and start server
 sequelize.authenticate()
