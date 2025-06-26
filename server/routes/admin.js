@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const User = require('../models/User');
+const User = require('../models/user'); // Ensure this path is correct
 const Venue = require('../models/Venue');
 const Booking = require('../models/Booking');
 const Review = require('../models/Review');
