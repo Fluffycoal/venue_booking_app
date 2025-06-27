@@ -1,3 +1,4 @@
+const { verifyAdmin } = require('../middleware/authMiddleware');
 const express = require('express');
 const router = express.Router();
 
@@ -7,7 +8,7 @@ const Booking = require('../models/Booking');
 const Review = require('../models/Review');
 
 // === 1. Get all users ===
-router.get('/users', async (req, res) => {
+router.get('/users', verifyAdmin, async (req, res) => {
   try {
     const users = await User.findAll({ attributes: { exclude: ['password'] } });
     res.json(users);
@@ -17,7 +18,7 @@ router.get('/users', async (req, res) => {
 });
 
 // === 2. Update a user's role or status ===
-router.put('/users/:id', async (req, res) => {
+router.put('/users/:id', verifyAdmin, async (req, res) => {
   try {
     const { role, status } = req.body;
     const user = await User.findByPk(req.params.id);
@@ -35,7 +36,7 @@ router.put('/users/:id', async (req, res) => {
 });
 
 // === 3. Delete a user ===
-router.delete('/users/:id', async (req, res) => {
+router.delete('/users/:id', verifyAdmin, async (req, res) => {
   try {
     const user = await User.findByPk(req.params.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
@@ -48,7 +49,7 @@ router.delete('/users/:id', async (req, res) => {
 });
 
 // === 4. Approve or reject a venue ===
-router.put('/venues/:id/status', async (req, res) => {
+router.put('/venues/:id/status', verifyAdmin, async (req, res) => {
   try {
     const { status } = req.body;
     const venue = await Venue.findByPk(req.params.id);
@@ -65,7 +66,7 @@ router.put('/venues/:id/status', async (req, res) => {
 });
 
 // === 5. View all bookings ===
-router.get('/bookings', async (req, res) => {
+router.get('/bookings',verifyAdmin, async (req, res) => {
   try {
     const bookings = await Booking.findAll({ include: ['Venue', 'User'] });
     res.json(bookings);
@@ -75,7 +76,7 @@ router.get('/bookings', async (req, res) => {
 });
 
 // === 6. View all reviews ===
-router.get('/reviews', async (req, res) => {
+router.get('/reviews',verifyAdmin, async (req, res) => {
   try {
     const reviews = await Review.findAll({ include: ['User', 'Venue'] });
     res.json(reviews);

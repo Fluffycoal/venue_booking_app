@@ -1,3 +1,4 @@
+const sendEmail = require('../utils/sendEmail'); 
 const express = require('express');
 const router = express.Router();
 const Booking = require('../models/Booking');
@@ -11,19 +12,41 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
+    // Fetch client and venue
+    const user = await User.findByPk(clientId);
+    const venue = await Venue.findByPk(venueId);
+
+    if (!user || !venue) {
+      return res.status(404).json({ message: 'Client or venue not found' });
+    }
+
+    // Create the booking
     const booking = await Booking.create({
       clientId,
       venueId,
       eventDate
     });
 
-    res.status(201).json({ message: 'Booking submitted', booking });
+    // Send confirmation email
+    await sendEmail(
+      user.email,
+      'Your Booking is Submitted',
+      `
+        <h2>Hi ${user.username},</h2>
+        <p>You have successfully submitted a booking for <strong>${venue.name}</strong> on <strong>${eventDate}</strong>.</p>
+        <p>We will notify you once the booking is approved by the venue owner.</p>
+        <br/>
+        <p>Thank you for using Venue Booking Platform.</p>
+      `
+    );
+
+    res.status(201).json({ message: 'Booking submitted and email sent', booking });
+
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
-
-module.exports = router;
 
 
 // GET /api/bookings/client/:clientId
