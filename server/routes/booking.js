@@ -1,7 +1,11 @@
-const sendEmail = require('../utils/sendEmail'); 
 const express = require('express');
 const router = express.Router();
+const { format } = require('date-fns');
+
 const Booking = require('../models/Booking');
+const User = require('../models/user');
+const Venue = require('../models/Venue');
+const sendEmail = require('../utils/sendEmail');
 
 // POST /api/bookings
 router.post('/', async (req, res) => {
@@ -10,6 +14,20 @@ router.post('/', async (req, res) => {
 
     if (!clientId || !venueId || !eventDate) {
       return res.status(400).json({ message: 'Missing required fields' });
+    }
+
+    // Check for booking conflict (same venue & date)
+    const conflict = await Booking.findOne({
+      where: {
+        venueId,
+        eventDate
+      }
+    });
+
+    if (conflict) {
+      return res.status(409).json({
+        message: 'This venue is already booked on the selected date. Please choose another date.'
+      });
     }
 
     // Fetch client and venue
@@ -27,7 +45,7 @@ router.post('/', async (req, res) => {
       eventDate
     });
 
-    // Send confirmation email
+    // Send email to client
     await sendEmail(
       user.email,
       'Your Booking is Submitted',
@@ -35,19 +53,30 @@ router.post('/', async (req, res) => {
         <h2>Hi ${user.username},</h2>
         <p>You have successfully submitted a booking for <strong>${venue.name}</strong> on <strong>${eventDate}</strong>.</p>
         <p>We will notify you once the booking is approved by the venue owner.</p>
-        <br/>
-        <p>Thank you for using Venue Booking Platform.</p>
       `
     );
 
-    res.status(201).json({ message: 'Booking submitted and email sent', booking });
+    // Notify venue owner
+    const owner = await User.findByPk(venue.ownerId);
+    if (owner) {
+      await sendEmail(
+        owner.email,
+        'New Booking Request Received',
+        `
+          <h2>Hello ${owner.username},</h2>
+          <p>You have received a new booking request for your venue: <strong>${venue.name}</strong>.</p>
+          <p><strong>Date:</strong> ${eventDate}</p>
+          <p>Please log in to approve or reject this booking.</p>
+        `
+      );
+    }
 
+    res.status(201).json({ message: 'Booking submitted and emails sent', booking });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
-
 
 // GET /api/bookings/client/:clientId
 router.get('/client/:clientId', async (req, res) => {
@@ -70,9 +99,6 @@ router.get('/client/:clientId', async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
-
-const Venue = require('../models/Venue');
-const User = require('../models/user'); // Import User model
 
 // GET /api/bookings/owner/:ownerId
 router.get('/owner/:ownerId', async (req, res) => {
@@ -115,13 +141,27 @@ router.put('/:id/status', async (req, res) => {
     booking.status = status;
     await booking.save();
 
+    // Send status update email to client
+    const client = await User.findByPk(booking.clientId);
+    const venue = await Venue.findByPk(booking.venueId);
+
+    if (client && venue) {
+      await sendEmail(
+        client.email,
+        `Booking ${status.toUpperCase()} - ${venue.name}`,
+        `
+          <h2>Hello ${client.username},</h2>
+          <p>Your booking for <strong>${venue.name}</strong> on <strong>${booking.eventDate}</strong> has been <strong>${status}</strong>.</p>
+          <p>Thank you for using Venue Booking Platform.</p>
+        `
+      );
+    }
+
     res.json({ message: `Booking ${status}`, booking });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
-
-const { format } = require('date-fns');
 
 // GET /api/bookings/:id/invoice
 router.get('/:id/invoice', async (req, res) => {
@@ -158,3 +198,5 @@ router.get('/:id/invoice', async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
+
+module.exports = router;
