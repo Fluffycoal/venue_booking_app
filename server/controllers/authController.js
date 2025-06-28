@@ -4,7 +4,9 @@ const User = require('../models/user');
 require('dotenv').config();
 
 exports.register = async (req, res) => {
-  const { fullname, username, email, password, role } = req.body;
+  console.log('Incoming signup data:', req.body); // ✅ Add this for debugging
+  const { username, email, password, role } = req.body;
+  console.log('Signup request body:', req.body); 
 
   try {
     const existingUser = await User.findOne({ where: { email } });
@@ -16,7 +18,6 @@ exports.register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const user = await User.create({
-      fullname,
       username,
       email,
       password: hashedPassword,

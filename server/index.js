@@ -10,12 +10,11 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// Load models (must be required so Sequelize syncs them)
-require('./models/user');    // User model
-require('./models/Venue');   // Venue model
-require('./models/Booking'); // Add this below Venue model
+// Load models
+require('./models/user');
+require('./models/Venue');
+require('./models/Booking');
 require('./models/Review');
-
 
 // Import routes
 const authRoutes = require('./routes/auth');
@@ -23,7 +22,6 @@ const venueRoutes = require('./routes/venue');
 const bookingRoutes = require('./routes/booking');
 const reviewRoutes = require('./routes/review');
 const adminRoutes = require('./routes/admin');
-
 
 // Use routes
 app.use('/api/auth', authRoutes);
@@ -36,7 +34,7 @@ app.use('/api/admin', adminRoutes);
 sequelize.authenticate()
   .then(() => {
     console.log('MySQL Connected...');
-    return sequelize.sync(); // Sync tables
+    return sequelize.sync({ alter: true }); // 👈 ensure schema updates
   })
   .then(() => {
     app.listen(PORT, () => {
