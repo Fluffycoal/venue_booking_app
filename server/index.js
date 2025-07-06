@@ -36,7 +36,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 sequelize.authenticate()
   .then(() => {
     console.log('MySQL Connected...');
-    return sequelize.sync({ alter: true }); 
+    return sequelize.sync(); 
   })
   .then(() => {
     app.listen(PORT, () => {
