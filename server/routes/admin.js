@@ -7,6 +7,26 @@ const Venue = require('../models/Venue');
 const Booking = require('../models/Booking');
 const Review = require('../models/Review');
 
+// === 0. Admin Dashboard Summary ===
+router.get('/dashboard', verifyAdmin, async (req, res) => {
+  try {
+    const totalUsers = await User.count();
+    const totalVenues = await Venue.count();
+    const totalBookings = await Booking.count();
+    const totalReviews = await Review.count();
+
+    res.json({
+      totalUsers,
+      totalVenues,
+      totalBookings,
+      totalReviews
+    });
+  } catch (error) {
+    console.error('Dashboard summary error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // === 1. Get all users ===
 router.get('/users', verifyAdmin, async (req, res) => {
   try {
@@ -84,5 +104,26 @@ router.get('/reviews',verifyAdmin, async (req, res) => {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
+
+// === 7. View all venues (for approval) ===
+router.get('/venues', verifyAdmin, async (req, res) => {
+  try {
+    const venues = await Venue.findAll();
+    res.json(venues);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+// === View only pending venues ===
+router.get('/pending-venues', verifyAdmin, async (req, res) => {
+  try {
+    const venues = await Venue.findAll({ where: { status: 'pending' } });
+    res.json(venues);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
 
 module.exports = router;

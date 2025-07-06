@@ -114,7 +114,7 @@
           } else if (role === 'owner') {
             window.location.href = 'owner_dashboard.html';
           } else if (role === 'admin') {
-            window.location.href = 'admin_panel.html';
+            window.location.href = 'admin_Dashboard.html';
           } else {
             errorMessage.textContent = 'Unknown user role. Contact support.';
           }
@@ -125,6 +125,42 @@
         errorMessage.textContent = 'Server error. Please try again.';
       }
     });
+      let isDark = false;
+
+  function toggleProfileMenu() {
+    const menu = document.getElementById('profileMenu');
+    menu.classList.toggle('hidden');
+  }
+
+  function toggleDarkMode() {
+    isDark = !isDark;
+    document.body.classList.toggle('bg-gray-900');
+    document.body.classList.toggle('text-white');
+
+    const elements = document.querySelectorAll('.bg-white, .text-blue-700, .bg-gray-100');
+    elements.forEach(el => {
+      el.classList.toggle('bg-gray-800');
+      el.classList.toggle('text-white');
+      el.classList.toggle('text-blue-300');
+    });
+  }
+
+  function loadAdminInfo() {
+    const token = localStorage.getItem('token');
+    fetch('http://localhost:5000/api/auth/me', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById('adminInfo').innerText = `${data.username}\n${data.email}`;
+    })
+    .catch(err => {
+      document.getElementById('adminInfo').innerText = 'Admin';
+    });
+  }
+
+  // Load admin info when page loads
+  window.onload = loadAdminInfo;
   </script>
 </body>
 </html>

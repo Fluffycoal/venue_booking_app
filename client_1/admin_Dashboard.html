@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body id="pageBody" class="bg-gray-100 text-gray-900 transition duration-300">
+
+  <div class="flex min-h-screen">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-blue-700 text-white flex flex-col p-6">
+      <h2 class="text-2xl font-bold mb-8 tracking-wide">VENUE<span class="text-yellow-300">~WISE</span></h2>
+      <h2 onclick="refreshDashboard()" class="text-2xl font-bold mb-8 cursor-pointer hover:underline">Admin Panel</h2>
+      <nav class="flex flex-col space-y-4">
+        <button onclick="loadSection('users')" class="text-left hover:bg-blue-600 px-3 py-2 rounded">Manage Users</button>
+        <button onclick="loadSection('venues')" class="text-left hover:bg-blue-600 px-3 py-2 rounded">Approve Venues</button>
+        <button onclick="loadSection('bookings')" class="text-left hover:bg-blue-600 px-3 py-2 rounded">View Bookings</button>
+        <button onclick="loadSection('reviews')" class="text-left hover:bg-blue-600 px-3 py-2 rounded">View Reviews</button>
+      </nav>
+      <div class="mt-auto pt-8 border-t border-blue-500">
+        <span class="block mb-2 text-sm">Logged in as Admin</span>
+        <button onclick="logout()" class="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 w-full">Logout</button>
+      </div>
+    </aside>
+
+    <!-- Main content area -->
+    <main class="flex-1 flex flex-col">
+      <!-- Header -->
+      <header class="bg-white shadow p-4 flex justify-between items-center">
+        <h1 class="text-xl font-semibold text-blue-700">Dashboard</h1>
+
+        <!-- Profile section -->
+  <div class="relative">
+    <button onclick="toggleDropdown()" class="w-10 h-10 rounded-full overflow-hidden border-2 border-white focus:outline-none">
+      <img src="https://i.pravatar.cc/40?u=admin" alt="Admin Avatar" class="w-full h-full object-cover">
+    </button>
+
+
+    <!-- Dropdown menu -->
+    <div id="profileDropdown" class="absolute right-0 mt-2 w-48 bg-white rounded shadow-lg hidden z-50">
+      <div class="p-4 border-b border-gray-200">
+        <p id="profileName" class="text-sm font-medium text-gray-800">Loading...</p>
+        <p id="profileEmail" class="text-xs text-gray-500">Loading...</p>
+      </div>
+      <button onclick="toggleDarkMode()" class="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">
+        Toggle Dark/Light Mode
+      </button>
+      <button onclick="logout()" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+        Logout
+      </button>
+    </div>
+  </div>
+      </header>
+
+      <!-- Dashboard content -->
+      <section class="p-6 flex-1 overflow-y-auto">
+        <div id="dashboard-content" class="bg-white rounded shadow p-4">
+          <h2 class="text-lg font-semibold mb-2">Welcome, Admin 👋</h2>
+          <div id="summary-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <!-- Cards will be populated by JS -->
+          </div>
+          <p>Select an option from the sidebar to begin.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+  const token = localStorage.getItem('token');
+
+  function logout() {
+    localStorage.removeItem('token');
+    window.location.href = 'login.html';
+  }
+
+  function loadSection(section) {
+    const contentDiv = document.getElementById('dashboard-content');
+    contentDiv.innerHTML = '<p class="text-gray-500">Loading...</p>';
+
+    let endpoint = '';
+
+    switch (section) {
+      case 'users':
+        endpoint = '/api/admin/users';
+        break;
+      case 'venues':
+        endpoint = '/api/admin/venues';
+        break;
+      case 'bookings':
+        endpoint = '/api/admin/bookings';
+        break;
+      case 'reviews':
+        endpoint = '/api/admin/reviews';
+        break;
+    }
+
+    fetch(`http://localhost:5000${endpoint}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (section === 'venues') {
+          contentDiv.innerHTML = renderVenueApprovalTable(data);
+        } else {
+          contentDiv.innerHTML = renderTable(section, data);
+        }
+      })
+      .catch(err => {
+        contentDiv.innerHTML = `<p class="text-red-500">Error loading ${section}</p>`;
+        console.error(err);
+      });
+  }
+
+    function renderTable(type, data) {
+    if (!Array.isArray(data) || data.length === 0) {
+      return `<p class="text-gray-600">No ${type} found.</p>`;
+    }
+
+    if (type === 'users') {
+      return renderUsersTable(data);
+    }
+
+    // fallback for generic tables
+    const keys = Object.keys(data[0]);
+    let table = `<div class="overflow-x-auto"><table class="min-w-full text-sm text-left"><thead><tr>`;
+    keys.forEach(k => table += `<th class="px-4 py-2 border-b bg-gray-100">${k}</th>`);
+    table += `</tr></thead><tbody>`;
+    data.forEach(item => {
+      table += `<tr>`;
+      keys.forEach(k => {
+        table += `<td class="px-4 py-2 border-b">${item[k]}</td>`;
+      });
+      table += `</tr>`;
+    });
+    table += `</tbody></table></div>`;
+    return table;
+  }
+
+  function renderUsersTable(users) {
+  let html = `<div class="overflow-x-auto">
+    <table class="min-w-full text-sm text-left">
+      <thead>
+        <tr>
+          <th class="px-4 py-2 bg-gray-100 border-b">ID</th>
+          <th class="px-4 py-2 bg-gray-100 border-b">Username</th>
+          <th class="px-4 py-2 bg-gray-100 border-b">Email</th>
+          <th class="px-4 py-2 bg-gray-100 border-b">Role</th>
+          <th class="px-4 py-2 bg-gray-100 border-b">Status</th>
+          <th class="px-4 py-2 bg-gray-100 border-b">Actions</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+  users.forEach(user => {
+    html += `
+      <tr>
+        <td class="px-4 py-2 border-b">${user.id}</td>
+        <td class="px-4 py-2 border-b">${user.username}</td>
+        <td class="px-4 py-2 border-b">${user.email}</td>
+        <td class="px-4 py-2 border-b">
+          <select onchange="updateUserRole(${user.id}, this.value)" class="px-2 py-1 border rounded text-sm">
+            <option value="client" ${user.role === 'client' ? 'selected' : ''}>Client</option>
+            <option value="owner" ${user.role === 'owner' ? 'selected' : ''}>Venue Owner</option>
+            <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
+          </select>
+        </td>
+        <td class="px-4 py-2 border-b">${user.status || 'active'}</td>
+        <td class="px-4 py-2 border-b space-x-2">
+          <button onclick="toggleUserStatus(${user.id}, '${user.status || 'active'}')" class="px-2 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded text-xs">
+            ${user.status === 'suspended' ? 'Activate' : 'Suspend'}
+          </button>
+          <button onclick="deleteUser(${user.id})" class="px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-xs">
+            Delete
+          </button>
+        </td>
+      </tr>`;
+  });
+
+  html += `</tbody></table></div>`;
+  return html;
+}
+
+  function toggleUserStatus(userId, currentStatus) {
+    const token = localStorage.getItem('token');
+    const newStatus = currentStatus === 'suspended' ? 'active' : 'suspended';
+
+    fetch(`http://localhost:5000/api/admin/users/${userId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ status: newStatus })
+    })
+    .then(res => res.json())
+    .then(() => loadSection('users'))
+    .catch(err => alert('Error updating user status'));
+  }
+
+  function deleteUser(userId) {
+    const confirmDelete = confirm('Are you sure you want to delete this user?');
+    if (!confirmDelete) return;
+
+    const token = localStorage.getItem('token');
+    fetch(`http://localhost:5000/api/admin/users/${userId}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    .then(res => res.json())
+    .then(() => loadSection('users'))
+    .catch(err => alert('Error deleting user'));
+  }
+  function updateUserRole(userId, newRole) {
+  const token = localStorage.getItem('token');
+
+  fetch(`http://localhost:5000/api/admin/users/${userId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({ role: newRole })
+  })
+  .then(res => res.json())
+  .then(() => {
+    alert('Role updated successfully');
+    loadSection('users');
+  })
+  .catch(err => {
+    alert('Error updating role');
+    console.error(err);
+  });
+}
+
+
+  function renderVenueApprovalTable(venues) {
+  if (!Array.isArray(venues)) {
+    return `<p class="text-red-500">Error: Invalid venue data</p>`;
+  }
+
+  let html = `<h2 class="text-lg font-semibold mb-4">Pending Venues</h2>`;
+  html += `<div class="overflow-x-auto">
+    <table class="min-w-full text-sm text-left">
+      <thead>
+        <tr class="bg-gray-100">
+          <th class="px-4 py-2">ID</th>
+          <th class="px-4 py-2">Name</th>
+          <th class="px-4 py-2">Location</th>
+          <th class="px-4 py-2">Status</th>
+          <th class="px-4 py-2">Actions</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+  venues.forEach(v => {
+    html += `<tr>
+      <td class="px-4 py-2 border">${v.id}</td>
+      <td class="px-4 py-2 border">${v.name}</td>
+      <td class="px-4 py-2 border">${v.location}</td>
+      <td class="px-4 py-2 border">${v.status}</td>
+      <td class="px-4 py-2 border">
+        <button onclick="updateVenueStatus(${v.id}, 'approved')" class="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600">Approve</button>
+        <button onclick="updateVenueStatus(${v.id}, 'rejected')" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 ml-2">Reject</button>
+      </td>
+    </tr>`;
+  });
+
+  html += `</tbody></table></div>`;
+  return html;
+}
+
+
+  function updateVenueStatus(venueId, status) {
+    fetch(`http://localhost:5000/api/admin/venues/${venueId}/status`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ status })
+    })
+      .then(res => res.json())
+      .then(data => {
+        alert(`Venue ${status} successfully`);
+        loadSection('venues'); // Refresh list
+      })
+      .catch(err => {
+        console.error('Failed to update venue:', err);
+        alert('Error updating venue status');
+      });
+  }
+  // Call this on load
+fetchDashboardSummary();
+
+function fetchDashboardSummary() {
+  fetch('http://localhost:5000/api/admin/dashboard', {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  .then(res => res.json())
+  .then(data => {
+    const summaryDiv = document.getElementById('summary-cards');
+    summaryDiv.innerHTML = `
+      ${renderCard("Users", data.totalUsers, "bg-blue-500")}
+      ${renderCard("Venues", data.totalVenues, "bg-green-500")}
+      ${renderCard("Bookings", data.totalBookings, "bg-purple-500")}
+      ${renderCard("Reviews", data.totalReviews, "bg-orange-500")}
+    `;
+  })
+  .catch(err => {
+    console.error("Error fetching dashboard summary:", err);
+  });
+}
+
+function renderCard(label, value, color) {
+  return `
+    <div class="${color} text-white p-4 rounded shadow">
+      <h3 class="text-sm font-medium">${label}</h3>
+      <p class="text-2xl font-bold">${value}</p>
+    </div>
+  `;
+}
+  function refreshDashboard() {
+  const contentDiv = document.getElementById('dashboard-content');
+  contentDiv.innerHTML = `
+    <h2 class="text-lg font-semibold mb-4">Welcome, Admin 👋</h2>
+    <div id="summary-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <!-- Cards will be inserted here -->
+    </div>
+    <p>Select an option from the sidebar to begin.</p>
+  `;
+  fetchDashboardSummary();
+}
+  function toggleDropdown() {
+    const dropdown = document.getElementById('profileDropdown');
+    dropdown.classList.toggle('hidden');
+  }
+
+  function goToDashboard() {
+    document.getElementById('dashboard-content').innerHTML = `
+      <h2 class="text-lg font-semibold mb-2">Welcome, Admin 👋</h2>
+      <p>Select an option from the sidebar to begin.</p>
+    `;
+  }
+
+  function toggleDarkMode() {
+  const body = document.getElementById('pageBody');
+  const isDark = body.classList.toggle('bg-gray-900');
+
+  if (isDark) {
+    body.classList.remove('bg-gray-100', 'text-gray-900');
+    body.classList.add('text-white');
+    localStorage.setItem('theme', 'dark');
+  } else {
+    body.classList.remove('bg-gray-900', 'text-white');
+    body.classList.add('bg-gray-100', 'text-gray-900');
+    localStorage.setItem('theme', 'light');
+  }
+}
+
+
+  // Fetch and display admin profile info
+  window.addEventListener('DOMContentLoaded', () => {
+  // Load admin profile info
+  fetch('http://localhost:5000/api/auth/me', {
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('token')}`
+    }
+  })
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById('profileName').textContent = data.username;
+    document.getElementById('profileEmail').textContent = data.email;
+  })
+  .catch(err => {
+    console.error('Failed to load profile info:', err);
+  });
+
+  // Apply stored theme
+  const savedTheme = localStorage.getItem('theme');
+  const body = document.getElementById('pageBody');
+  if (savedTheme === 'dark') {
+    body.classList.remove('bg-gray-100', 'text-gray-900');
+    body.classList.add('bg-gray-900', 'text-white');
+  }
+});
+
+</script>
+</body>
+</html>
