@@ -35,7 +35,7 @@
         <!-- Profile section -->
   <div class="relative">
     <button onclick="toggleDropdown()" class="w-10 h-10 rounded-full overflow-hidden border-2 border-white focus:outline-none">
-      <img src="https://i.pravatar.cc/40?u=admin" alt="Admin Avatar" class="w-full h-full object-cover">
+      <img id="admin-avatar" src="https://i.pravatar.cc/40?u=admin" alt="Admin Avatar" class="w-full h-full object-cover">
     </button>
 
 
@@ -373,9 +373,14 @@ function renderCard(label, value, color) {
   })
   .then(res => res.json())
   .then(data => {
-    document.getElementById('profileName').textContent = data.username;
-    document.getElementById('profileEmail').textContent = data.email;
-  })
+  document.getElementById('profileName').textContent = data.username;
+  document.getElementById('profileEmail').textContent = data.email;
+
+  // Generate avatar based on username/email
+  const avatarUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(data.username || data.email)}`;
+  document.getElementById('admin-avatar').src = avatarUrl;
+})
+
   .catch(err => {
     console.error('Failed to load profile info:', err);
   });
