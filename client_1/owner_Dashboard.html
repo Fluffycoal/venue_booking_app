@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Venue Owner Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex bg-gray-100 min-h-screen text-gray-800">
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-orange-600 text-white flex flex-col p-6">
+    <h1 class="text-2xl font-bold mb-10">VENUE<span class="text-yellow-200">WISE</span></h1>
+    <nav class="flex flex-col space-y-4">
+      <button onclick="loadSection('myVenues')" class="hover:bg-orange-500 px-3 py-2 rounded text-left">My Venues</button>
+      <button onclick="loadSection('manageVenues')" class="hover:bg-orange-500 px-3 py-2 rounded text-left">Manage Venues</button>
+      <button onclick="loadSection('bookings')" class="hover:bg-orange-500 px-3 py-2 rounded text-left">Bookings</button>
+      <button onclick="loadSection('reviews')" class="hover:bg-orange-500 px-3 py-2 rounded text-left">Reviews</button>
+    </nav>
+    <div class="mt-auto pt-6 border-t border-orange-400">
+      <p class="text-sm mb-2">Logged in as <span class="font-semibold">Venue Owner</span></p>
+      <button onclick="logout()" class="bg-red-500 hover:bg-red-600 px-3 py-2 rounded w-full">Logout</button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 flex flex-col">
+    <!-- Top Bar -->
+    <header class="bg-white shadow p-4 flex justify-between items-center">
+      <h2 class="text-xl font-semibold text-orange-700">Venue Owner Dashboard</h2>
+      <div class="relative">
+        <button onclick="toggleDropdown()" class="w-10 h-10 rounded-full overflow-hidden border-2 border-orange-400">
+          <img id="avatarImg" src="" alt="Avatar" class="w-full h-full object-cover">
+        </button>
+        <div id="profileDropdown" class="absolute right-0 mt-2 w-48 bg-white rounded shadow-lg hidden z-50">
+          <div class="p-4 border-b border-gray-200">
+            <p id="profileName" class="text-sm font-medium text-gray-800">Loading...</p>
+            <p id="profileEmail" class="text-xs text-gray-500">Loading...</p>
+          </div>
+          <button onclick="logout()" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Dynamic Content Area -->
+    <section class="p-6 overflow-y-auto flex-1" id="dashboard-content">
+      <h3 class="text-lg font-semibold mb-2">Welcome, Venue Owner 👋</h3>
+      <p>Select a section from the sidebar to begin managing your venues.</p>
+    </section>
+  </main>
+
+  <!-- JS -->
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = 'login.html';
+    }
+
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    if (payload.role !== 'owner') {
+      alert('Access denied: Only venue owners allowed');
+      window.location.href = 'login.html';
+    }
+
+    document.getElementById('profileName').textContent = payload.username || 'Owner';
+    document.getElementById('profileEmail').textContent = payload.email;
+    document.getElementById('avatarImg').src = `https://i.pravatar.cc/100?u=${payload.email}`;
+
+    function toggleDropdown() {
+      document.getElementById('profileDropdown').classList.toggle('hidden');
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = 'login.html';
+    }
+
+    function loadSection(section) {
+      if (section === 'myVenues') loadVenues();
+      else if (section === 'manageVenues') loadVenueForm();
+      else if (section === 'bookings') loadBookings();
+      else if (section === 'reviews') loadReviews();
+    }
+
+    async function loadVenues() {
+      document.getElementById('dashboard-content').innerHTML = `<p>Loading your venues...</p>`;
+      const res = await fetch(`http://localhost:5000/api/venues?ownerId=${payload.id}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const venues = await res.json();
+
+      const html = `
+        <h2 class="text-xl font-semibold mb-4">My Venues</h2>
+        <div class="space-y-4">
+          ${venues.map(venue => `
+            <div class="bg-white p-4 rounded shadow">
+              <h3 class="text-lg font-bold">${venue.name}</h3>
+              <p><strong>Location:</strong> ${venue.location}</p>
+              <p><strong>Capacity:</strong> ${venue.capacity}</p>
+              <p><strong>Price:</strong> KES ${venue.price}</p>
+              <p><strong>Status:</strong> ${venue.status}</p>
+              <button onclick='editVenue(${JSON.stringify(venue)})' class="mt-2 bg-blue-500 text-white px-3 py-1 rounded">Edit</button>
+            </div>
+          `).join('')}
+        </div>
+      `;
+      document.getElementById('dashboard-content').innerHTML = html;
+    }
+
+    function loadVenueForm(venue = null) {
+      const formHTML = `
+        <h2 class="text-xl font-semibold mb-4">${venue ? 'Edit Venue' : 'Add New Venue'}</h2>
+        <form id="venueForm" class="space-y-4">
+          <input type="text" name="name" placeholder="Venue Name" required class="w-full p-2 border rounded" value="${venue?.name || ''}">
+          <input type="text" name="location" placeholder="Location" required class="w-full p-2 border rounded" value="${venue?.location || ''}">
+          <input type="number" name="capacity" placeholder="Capacity" required class="w-full p-2 border rounded" value="${venue?.capacity || ''}">
+          <input type="number" name="price" placeholder="Price" required class="w-full p-2 border rounded" value="${venue?.price || ''}">
+          <textarea name="description" placeholder="Description" class="w-full p-2 border rounded">${venue?.description || ''}</textarea>
+          <button type="submit" class="bg-orange-600 text-white px-4 py-2 rounded">${venue ? 'Update Venue' : 'Add Venue'}</button>
+        </form>
+      `;
+      document.getElementById('dashboard-content').innerHTML = formHTML;
+
+      document.getElementById('venueForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const form = new FormData(e.target);
+        const data = Object.fromEntries(form.entries());
+        data.ownerId = payload.id;
+
+        const method = venue ? 'PUT' : 'POST';
+        const url = venue ? `http://localhost:5000/api/venues/${venue.id}` : `http://localhost:5000/api/venues`;
+
+        const res = await fetch(url, {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(data)
+        });
+
+        if (res.ok) {
+          loadVenues();
+        } else {
+          alert('Failed to save venue');
+        }
+      };
+    }
+
+    function editVenue(venue) {
+      loadVenueForm(venue);
+    }
+
+    async function loadBookings() {
+    document.getElementById('dashboard-content').innerHTML = `<p>Loading your bookings...</p>`;
+    try {
+      const res = await fetch(`http://localhost:5000/api/owner/bookings`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      const bookings = await res.json();
+
+      if (!Array.isArray(bookings)) {
+        document.getElementById('dashboard-content').innerHTML = `<p class="text-red-600">Error loading bookings.</p>`;
+        return;
+      }
+
+      const html = `
+        <h2 class="text-xl font-semibold mb-4">Venue Bookings</h2>
+        <div class="space-y-4">
+          ${bookings.length === 0
+            ? '<p class="text-gray-500">No bookings found.</p>'
+            : bookings.map(b => `
+              <div class="bg-white p-4 rounded shadow mb-4">
+                <p><strong>Venue:</strong> ${b.Venue?.name || 'N/A'}</p>
+                <p><strong>Client:</strong> ${b.User?.username || 'Unknown Client'}</p>
+                <p><strong>Date:</strong> ${b.eventDate}</p>
+                <p><strong>Status:</strong> ${b.status}</p>
+                ${b.status === 'pending' ? `
+                  <div class="mt-2 flex gap-2">
+                    <button onclick="updateBookingStatus(${b.id}, 'approved')" class="bg-green-500 text-white px-3 py-1 rounded">Approve</button>
+                    <button onclick="updateBookingStatus(${b.id}, 'rejected')" class="bg-red-500 text-white px-3 py-1 rounded">Reject</button>
+                  </div>` : ''}
+              </div>
+            `).join('')}
+        </div>
+      `;
+
+      document.getElementById('dashboard-content').innerHTML = html;
+
+    } catch (err) {
+      console.error('Error loading bookings:', err);
+      document.getElementById('dashboard-content').innerHTML = `<p class="text-red-600">Failed to load bookings.</p>`;
+    }
+  }
+
+    async function updateBookingStatus(id, status) {
+      const res = await fetch(`http://localhost:5000/api/owner/bookings/${id}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status })
+      });
+
+      const data = await res.json();
+      if (!res.ok) return alert(data.message);
+      loadBookings();
+    }
+
+    function loadReviews() {
+      document.getElementById('dashboard-content').innerHTML = `
+        <h2 class="text-xl font-semibold mb-4">Reviews</h2>
+        <p class="text-gray-500">Coming soon: You'll be able to view client reviews on your venues.</p>
+      `;
+    }
+  </script>
+
+</body>
+</html>

@@ -45,8 +45,16 @@ const verifyAdmin = (req, res, next) => {
     res.status(401).json({ message: 'Invalid token', error: error.message });
   }
 };
+// Middleware to allow only venue owners
+const verifyOwner = (req, res, next) => {
+  if (!req.user || req.user.role !== 'owner') {
+    return res.status(403).json({ message: 'Access denied: Venue owners only' });
+  }
+  next();
+};
 
 module.exports = {
   authenticateUser,
   verifyAdmin,
+  verifyOwner,
 };

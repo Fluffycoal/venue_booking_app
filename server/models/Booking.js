@@ -17,9 +17,33 @@ const Booking = sequelize.define('Booking', {
     type: DataTypes.INTEGER,
     allowNull: false
   },
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  phone: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
   eventDate: {
     type: DataTypes.DATEONLY,
     allowNull: false
+  },
+  eventTime: {
+    type: DataTypes.TIME,
+    allowNull: false
+  },
+  guests: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
+  requirements: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  notes: {
+    type: DataTypes.TEXT,
+    allowNull: true
   },
   status: {
     type: DataTypes.ENUM('pending', 'approved', 'rejected', 'cancelled'),
@@ -35,4 +59,3 @@ Venue.hasMany(Booking, { foreignKey: 'venueId' });
 Booking.belongsTo(Venue, { foreignKey: 'venueId' });
 
 module.exports = Booking;
-

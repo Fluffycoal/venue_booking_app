@@ -28,7 +28,11 @@ const Venue = sequelize.define('Venue', {
   },
   ownerId: {
     type: DataTypes.INTEGER,
-    allowNull: false
+    allowNull: false,
+    references: {
+    model: 'Users',
+    key: 'id'
+  }
   }
 });
 

@@ -31,33 +31,45 @@ router.post('/', async (req, res) => {
 // GET: Search and filter venues
 router.get('/', async (req, res) => {
   try {
-    const { location, name, minPrice, maxPrice, minCapacity } = req.query;
+    const { location, name, minPrice, maxPrice, minCapacity, ownerId } = req.query;
 
     const filters = {
       status: 'approved'
     };
 
-    if (location) {
-      filters.location = location;
-    }
-
-    if (name) {
-      filters.name = { [Op.like]: `%${name}%` };
-    }
-
+    if (location) filters.location = location;
+    if (name) filters.name = { [Op.like]: `%${name}%` };
     if (minPrice || maxPrice) {
       filters.price = {};
       if (minPrice) filters.price[Op.gte] = parseFloat(minPrice);
       if (maxPrice) filters.price[Op.lte] = parseFloat(maxPrice);
     }
-
-    if (minCapacity) {
-      filters.capacity = { [Op.gte]: parseInt(minCapacity) };
-    }
+    if (minCapacity) filters.capacity = { [Op.gte]: parseInt(minCapacity) };
+    if (ownerId) filters.ownerId = parseInt(ownerId); // 👈 Add this
 
     const venues = await Venue.findAll({ where: filters });
 
     res.json(venues);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// GET: Fetch venue by exact name
+router.get('/name/:venueName', async (req, res) => {
+  try {
+    const venue = await Venue.findOne({
+      where: {
+        name: req.params.venueName,
+        status: 'approved' // Optional: Only fetch approved venues
+      }
+    });
+
+    if (!venue) {
+      return res.status(404).json({ message: 'Venue not found' });
+    }
+
+    res.json(venue);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

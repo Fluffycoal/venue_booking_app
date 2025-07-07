@@ -10,27 +10,32 @@ const sendEmail = require('../utils/sendEmail');
 // POST /api/bookings
 router.post('/', async (req, res) => {
   try {
-    const { clientId, venueId, eventDate } = req.body;
+    const {
+      clientId,
+      venueId,
+      name,
+      phone,
+      eventDate,
+      eventTime,
+      guests,
+      requirements,
+      notes
+    } = req.body;
 
-    if (!clientId || !venueId || !eventDate) {
+    if (!clientId || !venueId || !name || !phone || !eventDate || !eventTime || !guests) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    // Check for booking conflict (same venue & date)
     const conflict = await Booking.findOne({
-      where: {
-        venueId,
-        eventDate
-      }
+      where: { venueId, eventDate }
     });
 
     if (conflict) {
       return res.status(409).json({
-        message: 'This venue is already booked on the selected date. Please choose another date.'
+        message: 'This venue is already booked on the selected date.'
       });
     }
 
-    // Fetch client and venue
     const user = await User.findByPk(clientId);
     const venue = await Venue.findByPk(venueId);
 
@@ -38,36 +43,31 @@ router.post('/', async (req, res) => {
       return res.status(404).json({ message: 'Client or venue not found' });
     }
 
-    // Create the booking
     const booking = await Booking.create({
       clientId,
       venueId,
-      eventDate
+      name,
+      phone,
+      eventDate,
+      eventTime,
+      guests,
+      requirements,
+      notes
     });
 
-    // Send email to client
     await sendEmail(
       user.email,
       'Your Booking is Submitted',
-      `
-        <h2>Hi ${user.username},</h2>
-        <p>You have successfully submitted a booking for <strong>${venue.name}</strong> on <strong>${eventDate}</strong>.</p>
-        <p>We will notify you once the booking is approved by the venue owner.</p>
-      `
+      `<h2>Hi ${user.username},</h2><p>Your booking for <strong>${venue.name}</strong> on <strong>${eventDate}</strong> has been submitted.</p>`
     );
 
-    // Notify venue owner
     const owner = await User.findByPk(venue.ownerId);
     if (owner) {
       await sendEmail(
         owner.email,
-        'New Booking Request Received',
-        `
-          <h2>Hello ${owner.username},</h2>
-          <p>You have received a new booking request for your venue: <strong>${venue.name}</strong>.</p>
-          <p><strong>Date:</strong> ${eventDate}</p>
-          <p>Please log in to approve or reject this booking.</p>
-        `
+        'New Booking Request',
+        `<h2>Hello ${owner.username},</h2><p>You have a new booking request for <strong>${venue.name}</strong> on <strong>${eventDate}</strong>.</p>`
+        
       );
     }
 

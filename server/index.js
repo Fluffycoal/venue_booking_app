@@ -23,6 +23,7 @@ const bookingRoutes = require('./routes/booking');
 const reviewRoutes = require('./routes/review');
 const adminRoutes = require('./routes/admin');
 const path = require('path');
+const ownerRoutes = require('./routes/owner');
 
 // Use routes
 app.use('/api/auth', authRoutes);
@@ -31,6 +32,7 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/admin', adminRoutes);
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/api/owner', ownerRoutes);
 
 // Connect to database and start server
 sequelize.authenticate()
@@ -46,3 +48,4 @@ sequelize.authenticate()
   .catch((err) => {
     console.error('Database connection error:', err);
   });
+  
