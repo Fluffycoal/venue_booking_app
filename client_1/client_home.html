@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Home</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background-color: #fff;
+    border-bottom: 1px solid #ccc;
+  }
+  .logo {
+    font-weight: bold;
+  }
+  .logo a {
+    text-decoration: none;
+    color: #333;
+    font-size: 24px;
+  }
+
+  .nav-buttons {
+    display: flex;
+    gap: 10px;
+  }
+  .nav-buttons button {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    border-radius: 50px;
+    cursor: pointer;
+  }
+  .nav-buttons button:hover {
+    background-color: #f0f0f0; 
+  }
+
+  .auth-links {
+    display: flex;
+    gap: 10px;
+    margin-left: 20px;
+  }
+  .auth-links a {
+      padding: 8px 20px;
+      text-decoration: none;
+      color: white;
+      background-color: #007bff; 
+      border-radius: 50px; 
+      border: none;
+      display: inline-block;
+      transition: background-color 0.3s;
+    }
+
+    .auth-links a:hover {
+      background-color: #0056b3; 
+    }
+
+  .search-container {
+    display: flex;
+    justify-content: center;
+    margin: 20px;
+  }
+  .search-box {
+    width: 600px;
+    height: 40px;
+    padding: 8px;
+    border: 1px solid #888;
+    border-radius: 4px;
+  }
+
+  .categories {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+  }
+  .categories button {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    color: #000;
+    border-radius: 50px;
+    cursor: pointer;
+  }
+  .categories button:hover{
+    background-color: #f0f0f0;
+  }
+
+  .main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .banner {
+    margin: 20px auto;
+    width: 600px;
+    height: 150px;
+    border: 1px solid #888;
+    position: relative;
+  }
+
+  .section {
+    width: 90%;
+    max-width: 650px;
+    margin: 20px 0;
+  }
+  .section h3 {
+    margin-bottom: 10px;
+    text-align: left;
+  }
+
+  .carousel-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 650px; 
+    margin: auto;
+  }
+
+  .arrow-left,
+  .arrow-right {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(255,255,255,0.8);
+    border: none;
+    font-size: 24px;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 50%;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    z-index: 1;
+  }
+
+  .arrow-left {
+    left: 10px;
+  }
+  .arrow-right {
+    right: 10px;
+  }
+
+  .venue-list {
+    display: flex;
+    overflow-x: auto;
+    gap: 10px;
+    padding: 10px 0;
+    width: 100%;
+    scrollbar-width: none;
+  }
+  
+  .venue-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .venue-image {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    display: block;
+  }
+  .icons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo"><a href="client_home.html">VENUE~WISE</a></div>
+  <div class="nav-buttons">
+    <button onclick="location.href='client_nearyou.html'">Near you</button>
+    <button onclick="location.href='client_discover.html'">Discover</button>
+    <button onclick="location.href='client_review.html'">Review</button>
+  </div>
+  <div class="icons">
+    <a href="notifications.html">
+    <img src="images/messages icon.png" alt="Messages Icon" style="width: 50px; height:100%; object-fit: cover;"/>
+    </a>
+    <a href="client_profile.html">
+    <img src="images/Venue_wise_1_-removebg-preview.png" alt="Profile Icon" style="width: 50px; height:100%; object-fit: cover;" />
+    </a>
+  </div>
+</div>
+
+<div class="search-container">
+  <input type="text" placeholder="Search" class="search-box" />
+</div>
+
+<div class="categories">
+  <button onclick="location.href='client_restaurants.html'">Restaurants</button>
+  <button onclick="location.href='client_hotels.html'">Hotels</button>
+  <button onclick="location.href='client_ttd.html'">Things to do</button>
+  <button onclick="location.href='client_bnbs.html'">BnBs</button>
+  <button onclick="location.href='client_outdoors.html'">Outdoors</button>
+</div>
+
+<div class="main">
+
+  <div class="banner">
+    <img src="images/Venue~wise banner gif.gif" alt="Banner Image" style="width: 100%; height: 100%; object-fit: cover;" />
+  </div>
+
+  <div class="section">
+    <h3>Find out what's popular</h3>
+    <div class="carousel-container">
+      <button class="arrow-left" onclick="scrollCarousel(-1)">&#8592;</button>
+      <div class="venue-list" id="popularCarousel">
+        <a href="restaurants.html">
+          <img src="images/carnivore restaurant.jpg" class="venue-image" alt="">
+        </a>
+        <a href="restaurants.html">
+          <img src="images/NSK.jpg" class="venue-image" alt="">
+        </a>
+        <a href="restaurants.html">
+          <img src="images/harvest.jpg" class="venue-image" alt="">
+        </a>
+        <a href="hotels.html">
+          <img src="images/Tribe.jpg" class="venue-image" alt="">
+        </a>
+        <a href="hotels.html">
+          <img src="images/kempinski.jpg" class="venue-image" alt="">
+        </a>
+        <a href="hotels.html">
+          <img src="images/kwetu.jpg" class="venue-image" alt="">
+        </a>
+        <a href="hotels.html">
+          <img src="images/radisson blu.jpg" class="venue-image" alt="">
+        </a>
+      </div>
+      <button class="arrow-right" onclick="scrollCarousel(1)">&#8594;</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  
+  function scrollCarousel(direction) {
+    const container = document.getElementById('popularCarousel');
+    const scrollAmount = 150; 
+    
+    if (direction === -1) {
+      
+      container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+    } else {
+      
+      container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  }
+</script>
+
+</body>
+</html>

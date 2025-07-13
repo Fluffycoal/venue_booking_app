@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Review</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 20px;
+      background-color: #fff;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .logo a {
+      font-weight: bold;
+      text-decoration: none;
+      color: #333;
+      font-size: 24px;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .nav-buttons button {
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      background-color: #fff;
+      border-radius: 50px;
+      cursor: pointer;
+    }
+
+    .nav-buttons button:hover {
+      background-color: #f0f0f0;
+    }
+
+    .auth-links {
+      display: flex;
+      gap: 10px;
+      margin-left: 20px;
+    }
+
+    .auth-links a {
+      padding: 8px 20px;
+      text-decoration: none;
+      color: white;
+      background-color: #007bff;
+      border-radius: 50px;
+      border: none;
+      display: inline-block;
+      transition: background-color 0.3s;
+    }
+
+    .auth-links a:hover {
+      background-color: #0056b3;
+    }
+
+    .container {
+      width: 400px;
+      margin: 50px auto;
+      border: 1px solid #ccc;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    .star {
+      font-size: 2em;
+      cursor: pointer;
+      color: #ccc;
+    }
+
+    .star.selected {
+      color: #ffd700;
+    }
+
+    .rating-label {
+      margin-top: 30px;
+    }
+
+    .review-write-label {
+      margin-top: 20px;
+    }
+
+    .submit-button {
+      margin-top: 20px;
+    }
+
+    .review-item {
+      border-bottom: 1px solid #ccc;
+      padding: 10px 0;
+    }
+
+    .review-item .stars {
+      color: #FFD700;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+  <div class="logo"><a href="client_home.html">VENUE~WISE</a></div>
+  <div class="nav-buttons">
+    <button onclick="location.href='client_nearyou.html'">Near you</button>
+    <button onclick="location.href='client_discover.html'">Discover</button>
+    <button onclick="location.href='client_review.html'">Review</button>
+  </div>
+  <div class="icons">
+    <a href="notifications.html">
+    <img src="images/messages icon.png" alt="Messages Icon" style="width: 50px; height:100%; object-fit: cover;"/>
+    </a>
+    <a href="client_profile.html">
+    <img src="images/Venue_wise_1_-removebg-preview.png" alt="Profile Icon" style="width: 50px; height:100%; object-fit: cover;" />
+    </a>
+  </div>
+</div>
+
+  <div class="container">
+    <form id="ReviewForm" method="post" style="margin: 20px;">
+      <div style="display: flex; flex-direction: column; align-items: center;">
+        <h2 style="font-size: 24px; margin-bottom: 20px;">Write a Review</h2>
+
+        <label for="venue" style="font-size: 16px; margin-bottom: 10px;">Venue Name:</label>
+        <input type="text" id="venue" name="venue" placeholder="Enter venue name" style="width: 350px; height: 30px; font-size: 14px;" required />
+        <br><br>
+
+        <div class="rating-label"><label for="rating">Rating:</label></div>
+        <div class="star-rating" style="display: flex; gap: 5px; margin-top: 5px;">
+          <span class="star" data-value="1">&#9733;</span>
+          <span class="star" data-value="2">&#9733;</span>
+          <span class="star" data-value="3">&#9733;</span>
+          <span class="star" data-value="4">&#9733;</span>
+          <span class="star" data-value="5">&#9733;</span>
+        </div>
+
+        <input type="hidden" id="rating" name="rating" value="0" required />
+        <br><br>
+
+        <div class="review-write-label"><label for="review">Write your review here...</label></div>
+        <textarea id="review" name="review" placeholder="Write your review here..." style="width: 350px; height: 100px; font-size: 14px;" required></textarea>
+        <br><br>
+
+        <div class="submit-button">
+          <button type="submit" style="width: 100px; height: 30px; font-size: 14px;">Submit</button>
+        </div>
+      </div>
+    </form>
+
+    <hr style="margin-top: 40px;">
+    <h3>Reviews</h3>
+    <div id="review-list" style="margin-top: 20px;"></div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const stars = document.querySelectorAll('.star');
+      const ratingInput = document.getElementById('rating');
+
+      stars.forEach(star => {
+        star.addEventListener('mouseover', () => highlightStars(star.dataset.value));
+        star.addEventListener('mouseout', () => highlightStars(ratingInput.value));
+        star.addEventListener('click', () => {
+          ratingInput.value = star.dataset.value;
+          highlightStars(star.dataset.value);
+        });
+      });
+
+      function highlightStars(rating) {
+        stars.forEach(star => {
+          if (parseInt(star.dataset.value) <= rating) {
+            star.classList.add('selected');
+          } else {
+            star.classList.remove('selected');
+          }
+        });
+      }
+
+      document.getElementById('venue').addEventListener('blur', (e) => {
+        const venueName = e.target.value.trim();
+        if (venueName) fetchReviews(venueName);
+      });
+
+      document.getElementById('ReviewForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const venueName = document.getElementById('venue').value.trim();
+        const rating = document.getElementById('rating').value;
+        const comment = document.getElementById('review').value.trim();
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+          alert('You must be logged in to submit a review.');
+          return;
+        }
+
+        try {
+          const res = await fetch('http://localhost:5000/api/reviews', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ venueName, rating, comment })
+          });
+
+          const data = await res.json();
+
+          if (res.ok) {
+            alert('✅ Review submitted successfully!');
+            document.getElementById('ReviewForm').reset();
+            highlightStars(0);
+            fetchReviews(venueName); // Refresh reviews
+          } else {
+            alert('❌ Error: ' + (data.message || 'Failed to submit review.'));
+          }
+        } catch (error) {
+          alert('❌ Network/server error. Try again later.');
+          console.error(error);
+        }
+      });
+
+      async function fetchReviews(venueName) {
+        const listDiv = document.getElementById('review-list');
+        listDiv.innerHTML = 'Loading reviews...';
+
+        try {
+          const res = await fetch(`http://localhost:5000/api/reviews/venue/${encodeURIComponent(venueName)}/reviews`);
+          const reviews = await res.json();
+
+          if (res.ok && Array.isArray(reviews)) {
+            if (reviews.length === 0) {
+              listDiv.innerHTML = '<p>No reviews yet.</p>';
+            } else {
+              listDiv.innerHTML = reviews.map(r => `
+                <div class="review-item">
+                  <strong>${r.username}</strong>
+                  <div class="stars">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
+                  <p>${r.comment || ''}</p>
+                </div>
+              `).join('');
+            }
+          } else {
+            listDiv.innerHTML = '<p>Failed to load reviews.</p>';
+          }
+        } catch (err) {
+          console.error('Error fetching reviews:', err);
+          listDiv.innerHTML = '<p>Server error while loading reviews.</p>';
+        }
+      }
+    });
+  </script>
+</body>
+</html>

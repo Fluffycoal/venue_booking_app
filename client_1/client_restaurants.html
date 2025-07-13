@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Restaurants</title>
+<link rel="stylesheet" href="css/structure.css">
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  .header {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background-color: #fff;
+    border-bottom: 1px solid #ccc;
+  }
+  .logo {
+    font-weight: bold;
+  }
+  .logo a {
+    text-decoration: none;
+    color: #333;
+    font-size: 24px;
+  }
+
+  .nav-buttons {
+    display: flex;
+    gap: 10px;
+  }
+  .nav-buttons button {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    border-radius: 50px;
+    cursor: pointer;
+  }
+  .nav-buttons button:hover {
+    background-color: #f0f0f0; 
+  }
+
+  .auth-links {
+    display: flex;
+    gap: 10px;
+    margin-left: 20px;
+  }
+  .auth-links a {
+      padding: 8px 20px;
+      text-decoration: none;
+      color: white;
+      background-color: #007bff; 
+      border-radius: 50px; 
+      border: none;
+      display: inline-block;
+      transition: background-color 0.3s;
+    }
+
+    .auth-links a:hover {
+      background-color: #0056b3; 
+    }
+
+  .search-container {
+    display: flex;
+    justify-content: center;
+    margin: 20px;
+  }
+  .search-box {
+    width: 600px;
+    height: 40px;
+    padding: 8px;
+    border: 1px solid #888;
+    border-radius: 4px;
+  }
+
+  .image-text-container {
+    display: flex;
+    align-items: center;
+    gap: 20px; 
+    margin-bottom: 20px; 
+  }
+
+  
+  .star-rating {
+    font-size: 20px; 
+    color: gold; 
+    margin-top: 8px; 
+  }
+
+ 
+  .hotel-description {
+    max-width: 600px; 
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo"><a href="client_home.html">VENUE~WISE</a></div>
+  <div class="nav-buttons">
+    <button onclick="location.href='client_nearyou.html'">Near you</button>
+    <button onclick="location.href='client_discover.html'">Discover</button>
+    <button onclick="location.href='client_review.html'">Review</button>
+  </div>
+  <div class="icons">
+    <a href="notifications.html">
+    <img src="images/messages icon.png" alt="Messages Icon" style="width: 50px; height:100%; object-fit: cover;"/>
+    </a>
+    <a href="client_profile.html">
+    <img src="images/Venue_wise_1_-removebg-preview.png" alt="Profile Icon" style="width: 50px; height:100%; object-fit: cover;" />
+    </a>
+  </div>
+</div>
+<br><br>
+<div class="content">
+    <h3>Taste restaurants in Nairobi</h3>
+
+
+    <div class="image-text-container">
+      <img src="images/shamba cafe.JPG" class="venue-image" width="300" alt="">
+      <div class="restaurant-description">
+        <h4>Shamba Cafe</h4>
+        <div class="star-rating">★★★★★</div>
+        <div class="restaurant-description">
+        <p>
+            Address: Loresho Ridge, Nairobi
+            <br><br>
+            Phone number: 0757 701080 
+            <br><br>
+            Want to book a table? <a href="client_bookingm.html?venue=Shamba%20Cafe">Click here</a>
+        </p>
+        </div>
+      </div>
+    </div>
+
+
+<div class="image-text-container">
+      <img src="images/carnivore restaurant.jpg" class="venue-image" width="300" alt="">
+      <div class="restaurant-description">
+        <h4>The Carnivore Restaurant</h4>
+        <div class="star-rating">★★★★★</div>
+        <div class="restaurant-description">
+        <p>
+            Address: Langata Road, Nairobi
+            <br><br>
+            Phone number: 0722 204647
+            <br><br>
+            Want to book a table? <a href="client_bookingm.html?venue=The%20Carnivore%20Restaurant">Click here</a>
+        </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="image-text-container">
+      <img src="images/harvest.jpg" class="venue-image" width="300" alt="">
+      <div class="restaurant-description">
+        <h4>Harvest Restaurant</h4>
+        <div class="star-rating">★★★★★</div>
+        <div class="restaurant-description">
+        <p>
+            Located in: Village Market.
+            <br><br>
+            Address: Limuru Road, Nairobi
+            <br><br>
+            Phone number: 0732 186215
+            <br><br>
+            Want to book a table? <a href="client_bookingm.html?venue=Harvest%20Restaurant">Click here</a>
+            </div>
+        </p>
+      </div>
+    </div>
+    <div class="image-text-container">
+      <img src="images/NSK.jpg" class="venue-image" width="300" alt="">
+      <div class="restaurant-description">
+        <h4>Nairobi Street Kitchen</h4>
+        <div class="star-rating">★★★★☆</div>
+        <div class="restaurant-description">
+        <p>
+            Address: Mpaka Road, Nairobi
+            <br><br>
+            Phone number: 0707 800800
+            <br><br>
+            Want to book a table? <a href="client_bookingm.html?venue=Nairobi%20Street%20Kitchen">Click here</a>
+        </p>
+        </div>
+        </div>
+      </div>
+</div>
+  
+</body>
+</html>

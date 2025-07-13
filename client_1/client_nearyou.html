@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Near You</title>
+<link rel="stylesheet" href="css/structure.css" />
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  .header {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background-color: #fff;
+    border-bottom: 1px solid #ccc;
+  }
+  .logo {
+    font-weight: bold;
+  }
+  .logo a {
+    text-decoration: none;
+    color: #333;
+    font-size: 24px;
+  }
+
+  .nav-buttons {
+    display: flex;
+    gap: 10px;
+  }
+  .nav-buttons button {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    border-radius: 50px;
+    cursor: pointer;
+  }
+  .nav-buttons button:hover {
+    background-color: #f0f0f0; 
+  }
+
+  .auth-links {
+    display: flex;
+    gap: 10px;
+    margin-left: 20px;
+  }
+  .auth-links a {
+      padding: 8px 20px;
+      text-decoration: none;
+      color: white;
+      background-color: #007bff; 
+      border-radius: 50px; 
+      border: none;
+      display: inline-block;
+      transition: background-color 0.3s;
+    }
+
+    .auth-links a:hover {
+      background-color: #0056b3; 
+    }
+
+  .search-container {
+    display: flex;
+    justify-content: center;
+    margin: 20px;
+  }
+  .search-box {
+    width: 600px;
+    height: 40px;
+    padding: 8px;
+    border: 1px solid #888;
+    border-radius: 4px;
+  }
+  
+  #venueResults {
+    margin-top: 20px;
+  }
+  .venue {
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+  }
+  h2 {
+    margin-bottom: 10px;
+  }
+  .location-button {
+    background-color: #4CAF50; /* Green */
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 25px; 
+    font-size: 16px;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: background-color 0.3s;
+  }
+  .location-button:hover {
+  background-color: #3a833d; 
+  }
+  
+</style>
+</head>
+<body>
+    
+<div class="header">
+  <div class="logo"><a href="client_home.html">VENUE~WISE</a></div>
+  <div class="nav-buttons">
+    <button onclick="location.href='client_nearyou.html'">Near you</button>
+    <button onclick="location.href='client_discover.html'">Discover</button>
+    <button onclick="location.href='client_review.html'">Review</button>
+  </div>
+  <div class="icons">
+    <a href="notifications.html">
+    <img src="images/messages icon.png" alt="Messages Icon" style="width: 50px; height:100%; object-fit: cover;"/>
+    </a>
+    <a href="client_profile.html">
+    <img src="images/Venue_wise_1_-removebg-preview.png" alt="Profile Icon" style="width: 50px; height:100%; object-fit: cover;" />
+    </a>
+  </div>
+</div>
+
+<div class="content">
+<h1>Find Venues Near You</h1>
+
+<button id="getLocationBtn" class="location-button">Allow Location Access</button>
+<p id="status"></p>
+<div id="venueResults"></div>
+
+<script>
+
+const venues = [
+  {
+    name: "Shamba Cafe",
+    lat: -1.21,
+    lon: 36.77,
+    address: "Loresho Ridge, Nairobi",
+    phone: "0757 701080"
+  },
+  {
+    name: "The Carnivore Restaurant",
+    lat: -1.345,
+    lon: 36.755,
+    address: "Langata Road, Nairobi",
+    phone: "0722 204647"
+  },
+  {
+    name: "Harvest Restaurant",
+    lat: -1.319,
+    lon: 36.778,
+    address: "Village Market, Limuru Road, Nairobi",
+    phone: "0732 186215"
+  },
+  {
+    name: "Nairobi Street Kitchen",
+    lat: -1.264,
+    lon: 36.783,
+    address: "Mpaka Road, Nairobi",
+    phone: "0707 800800"
+  }
+];
+
+
+function getDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Earth's radius in km
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+
+document.getElementById('getLocationBtn').addEventListener('click', () => {
+  const status = document.getElementById('status');
+  const resultsDiv = document.getElementById('venueResults');
+
+  if (navigator.geolocation) {
+    status.textContent = 'Requesting your location...';
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const userLat = position.coords.latitude;
+        const userLon = position.coords.longitude;
+        status.textContent = `Your location: (${userLat.toFixed(4)}, ${userLon.toFixed(4)})`;
+
+        // Calculate distances
+        const venuesWithDistance = venues.map((venue) => ({
+          ...venue,
+          distance: getDistance(userLat, userLon, venue.lat, venue.lon)
+        }));
+
+        // Sort by distance
+        venuesWithDistance.sort((a, b) => a.distance - b.distance);
+
+        // Show top 3
+        const topVenues = venuesWithDistance.slice(0, 3);
+
+        // Clear previous results
+        resultsDiv.innerHTML = '<h3>Closest Venues:</h3>';
+
+        // Display nearby venues
+        topVenues.forEach((venue) => {
+          const venueDiv = document.createElement('div');
+          venueDiv.className = 'venue';
+          venueDiv.innerHTML = `
+            <strong>${venue.name}</strong><br>
+            Address: ${venue.address}<br>
+            Phone: ${venue.phone}<br>
+            Distance: ${venue.distance.toFixed(2)} km
+          `;
+          resultsDiv.appendChild(venueDiv);
+        });
+      },
+      (error) => {
+        status.textContent = 'Unable to retrieve your location. Please try again.';
+        console.error('Geolocation error:', error);
+      }
+    );
+  } else {
+    status.textContent = 'Geolocation is not supported by your browser.';
+  }
+});
+</script>
+
+</div>
+</body>
+</html>
